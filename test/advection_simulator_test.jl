@@ -4,7 +4,7 @@
 
     using Test
     using EarthSciMLBase, EarthSciData
-    using ModelingToolkit, OrdinaryDiffEq
+    using ModelingToolkit, OrdinaryDiffEqDefault
     using ModelingToolkit: t, D
     using Distributions, LinearAlgebra
     using DynamicQuantities

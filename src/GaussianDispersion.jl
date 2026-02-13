@@ -45,7 +45,7 @@ Example:
 
 ```
 using Dates, EarthSciMLBase, EarthSciData, EnvironmentalTransport
-using ModelingToolkit, OrdinaryDiffEq
+using ModelingToolkit, OrdinaryDiffEqDefault
 
 t0 = DateTime(2022, 5, 1)
 t1 = DateTime(2022, 5, 2)
@@ -309,7 +309,7 @@ Example:
 
 ```
 using Dates, EarthSciMLBase, EarthSciData, EnvironmentalTransport
-using ModelingToolkit, OrdinaryDiffEq
+using ModelingToolkit, OrdinaryDiffEqDefault
 
 t0 = DateTime(2022, 5, 1)
 t1 = DateTime(2022, 5, 2)

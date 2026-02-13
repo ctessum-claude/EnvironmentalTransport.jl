@@ -4,7 +4,7 @@
     using ModelingToolkit
     using ModelingToolkit: t
     using DynamicQuantities
-    using OrdinaryDiffEq
+    using OrdinaryDiffEqDefault
     import SciMLBase
     using Dates
 

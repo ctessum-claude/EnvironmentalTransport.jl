@@ -37,7 +37,7 @@ vars = unknowns(sys)
 
 DataFrame(
     :Name => [string(Symbolics.tosymbol(v, escape = false)) for v in vars],
-    :Units => [ModelingToolkit.get_unit(v) for v in vars],
+    :Units => [dimension(ModelingToolkit.get_unit(v)) for v in vars],
     :Description => [ModelingToolkit.getdescription(v) for v in vars]
 )
 ```
@@ -50,7 +50,7 @@ params = parameters(sys)
 DataFrame(
     :Name => [string(Symbolics.tosymbol(p, escape = false)) for p in params],
     :Default => [ModelingToolkit.getdefault(p) for p in params],
-    :Units => [ModelingToolkit.get_unit(p) for p in params],
+    :Units => [dimension(ModelingToolkit.get_unit(p)) for p in params],
     :Description => [ModelingToolkit.getdescription(p) for p in params]
 )
 ```
@@ -93,8 +93,8 @@ Potential temperature is the temperature an air parcel would have if brought adi
 using OrdinaryDiffEqDefault, Plots
 default(size=(700,400))
 
-sys = LocalScaleMeteorology()
-csys = mtkcompile(sys)
+stab_sys = AtmosphericStability()
+csys_stab = mtkcompile(stab_sys)
 
 # Calculate potential temperature at different pressure levels
 pressures = range(101325, 50000, length=20)  # Pa
@@ -102,9 +102,9 @@ T_ambient = 288.15 .- 0.0065 .* (1 .- pressures ./ 101325) .* 8500  # Approximat
 
 θ_values = Float64[]
 for (p, T) in zip(pressures, T_ambient)
-    prob = ODEProblem(csys, Dict(), (0.0, 1.0), Dict(csys.T => T, csys.p => p))
+    prob = ODEProblem(csys_stab, Dict(), (0.0, 1.0), Dict(csys_stab.T => T, csys_stab.p => p))
     sol = solve(prob)
-    push!(θ_values, sol[csys.θ][end])
+    push!(θ_values, sol[csys_stab.θ][end])
 end
 
 plot(θ_values, pressures ./ 100,
@@ -322,36 +322,36 @@ p
 ### Example: Complete Boundary Layer Analysis
 
 ```@example local_met
-sys = LocalScaleMeteorology()
-csys = mtkcompile(sys)
+met_sys = LocalScaleMeteorology()
+csys_met = mtkcompile(met_sys)
 
 # Summer afternoon conditions
 conditions = Dict(
-    csys.T => 298.15,        # 25°C at 10m
-    csys.T_below => 300.15,  # 27°C at surface (superadiabatic)
-    csys.p => 100000.0,      # ~sea level
-    csys.z => 10.0,          # 10m measurement height
-    csys.z₀ => 0.1,          # Grassland
-    csys.Δz => 10.0,         # 10m vertical spacing
-    csys.T₀ => 300.15,       # Surface temperature
-    csys.ρ => 1.18,          # Air density
-    csys.u_star => 0.35,     # Moderate friction
-    csys.q_z => 150.0        # Strong upward heat flux (sunny afternoon)
+    csys_met.stability.T => 298.15,        # 25°C at 10m
+    csys_met.stability.T_below => 300.15,  # 27°C at surface (superadiabatic)
+    csys_met.stability.p => 100000.0,      # ~sea level
+    csys_met.surface.z => 10.0,            # 10m measurement height
+    csys_met.surface.z₀ => 0.1,            # Grassland
+    csys_met.stability.Δz => 10.0,         # 10m vertical spacing
+    csys_met.surface.T₀ => 300.15,         # Surface temperature
+    csys_met.surface.ρ => 1.18,            # Air density
+    csys_met.surface.u_star => 0.35,       # Moderate friction
+    csys_met.surface.q_z => 150.0          # Strong upward heat flux (sunny afternoon)
 )
 
-prob = ODEProblem(csys, Dict(), (0.0, 1.0), conditions)
+prob = ODEProblem(csys_met, Dict(), (0.0, 1.0), conditions)
 sol = solve(prob)
 
 println("=== Summer Afternoon Boundary Layer Analysis ===\n")
-println("Potential temperature: θ = $(round(sol[csys.θ][end], digits=1)) K")
-println("Stability (dθ/dz): $(round(sol[csys.dθ_dz][end] * 1000, digits=2)) K/km")
-println("Monin-Obukhov length: L = $(round(sol[csys.L][end], digits=1)) m")
-println("Stability parameter: ζ = $(round(sol[csys.ζ][end], digits=3))")
-println("Wind speed at 10m: ū = $(round(sol[csys.ū][end], digits=2)) m/s")
-println("Pasquill class: $(Int(round(sol[csys.pasquill_class][end]))) (1=A to 6=F)")
+println("Potential temperature: θ = $(round(sol[csys_met.stability.θ][end], digits=1)) K")
+println("Stability (dθ/dz): $(round(sol[csys_met.stability.dθ_dz][end] * 1000, digits=2)) K/km")
+println("Monin-Obukhov length: L = $(round(sol[csys_met.surface.L][end], digits=1)) m")
+println("Stability parameter: ζ = $(round(sol[csys_met.surface.ζ][end], digits=3))")
+println("Wind speed at 10m: ū = $(round(sol[csys_met.surface.ū][end], digits=2)) m/s")
+println("Pasquill class: $(Int(round(sol[csys_met.pasquill_class][end]))) (1=A to 6=F)")
 
 # Interpret the results
-L_val = sol[csys.L][end]
+L_val = sol[csys_met.surface.L][end]
 stability = L_val < 0 ? "UNSTABLE" : (L_val > 0 ? "STABLE" : "NEUTRAL")
 println("\nInterpretation: Atmosphere is $stability (typical for sunny afternoon)")
 ```
