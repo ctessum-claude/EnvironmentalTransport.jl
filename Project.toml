@@ -1,7 +1,7 @@
 name = "EnvironmentalTransport"
 uuid = "9e73f4c4-d7e8-4c78-8a11-cd2430746631"
-authors = ["EarthSciML authors and contributors"]
 version = "0.6.3"
+authors = ["EarthSciML authors and contributors"]
 
 [deps]
 DiffEqCallbacks = "459566f4-90b8-5000-8ac3-15dfb0a30def"
@@ -35,7 +35,7 @@ ModelingToolkit = "11"
 NonlinearSolve = "4"
 OrdinaryDiffEq = "6.108.0"
 OrdinaryDiffEqDefault = "1"
-OrdinaryDiffEqSSPRK = "1"
+OrdinaryDiffEqSSPRK = "1, 2"
 OrdinaryDiffEqTsit5 = "1"
 RuntimeGeneratedFunctions = "0.5.13"
 SciMLBase = "2.90"
